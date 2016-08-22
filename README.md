@@ -1,5 +1,5 @@
 # ThinkSharp.ObjectStorage
-ObjectStorage is a small extendable library with fluent API  creating storages for .net object.
+ObjectStorage is a small extendable library with fluent API for creating storages for .net object.
 
 Usage:
 
