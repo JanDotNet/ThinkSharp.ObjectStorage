@@ -13,7 +13,7 @@ Usage:
       .ForType<Person>()                        // create storage for the type 'Person'
       .UsingXmlSerializer()                     // use .net's XmlSerializer for serialization
       .Zipped()                                 // zip serialized object
-      .Encrypt("SecretePassword")               // encrypt zipped data
+      .Encrypt("SecretPassword")                // encrypt zipped data
       .AddFileLocation("C:\\Temp\\File.xml")    // add a storage location to store/restore the data
       .Build();
     
