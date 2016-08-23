@@ -1,0 +1,22 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
+    <metadata>
+        <id>ThinkSharp.ObjectStorage</id>
+        <version>0.1.0.0</version>
+        <title>ObjectStorage</title>
+        <authors>Jan-Niklas Schäfer</authors>
+        <owners>Jan-Niklas Schäfer</owners>
+        <licenseUrl>https://github.com/JanDotNet/ThinkSharp.ObjectStorage/blob/master/LICENSE</licenseUrl>
+        <projectUrl>https://github.com/JanDotNet/ThinkSharp.ObjectStorage</projectUrl>
+        <requireLicenseAcceptance>false</requireLicenseAcceptance>
+        <description>ObjectStorage is a small extendable library with fluent API for creating storages for .net object.</description>
+        <summary>ObjectStorage is a small extendable library with fluent API for creating storages for .net object.</summary>
+        <releaseNotes />
+        <copyright />
+        <language>en-US</language>
+        <tags>Serialization Xml Json Zip Encryption Persist Storage</tags>
+    </metadata>
+    <files>
+        <file src="lib\net40\ObjectStorage.dll" target="lib\net40\ObjectStorage.dll" />
+    </files>
+</package>

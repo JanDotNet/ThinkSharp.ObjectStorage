@@ -68,7 +68,13 @@
     <Compile Include="StorageBuilder.cs" />
     <Compile Include="Location\IStorageLocation.cs" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <None Include="Images\Icon.pdn" />
+    <None Include="ThinkSharp.ObjectStorage.nuspec" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Images\Icon.png" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
