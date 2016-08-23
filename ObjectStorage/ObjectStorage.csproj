@@ -70,7 +70,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Images\Icon.pdn" />
-    <None Include="ThinkSharp.ObjectStorage.nuspec" />
+    <None Include="ObjectStorage.nuspec" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Images\Icon.png" />
