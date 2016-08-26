@@ -29,8 +29,7 @@ namespace ObjectStorage.Test
                 Assert.IsNull(test);
 
                 // case: file does not exist
-                var saved = storage.Save(new Test { PropA = "A", PropB = "B" });
-                Assert.IsTrue(saved);
+                storage.Save(new Test { PropA = "A", PropB = "B" });
                 Assert.IsTrue(File.Exists(fileName));
 
                 test = storage.Load();
@@ -39,14 +38,40 @@ namespace ObjectStorage.Test
                 Assert.AreEqual("B", test.PropB);
 
                 // case: file does exist
-                saved = storage.Save(new Test { PropA = "C", PropB = "D" });
-                Assert.IsTrue(saved);
+                storage.Save(new Test { PropA = "C", PropB = "D" });
                 Assert.IsTrue(File.Exists(fileName));
 
                 test = storage.Load();
                 Assert.IsNotNull(test);
                 Assert.AreEqual("C", test.PropA);
                 Assert.AreEqual("D", test.PropB);
+            }
+        }
+
+        [TestMethod]
+        public void Test_FileStorage_Save_DirectoryNotExist()
+        {
+            var fileName = Path.Combine("Test1", "Test2", GetTestSpecificFileName());
+
+            foreach (var storageBuilder in GetStorageBuilders())
+            {
+                if (File.Exists(fileName))
+                    File.Delete(Path.GetFullPath(fileName));
+
+                var storage = storageBuilder
+                    .AddFileLocation(fileName)
+                    .Build();
+
+                var test = storage.Load();
+                Assert.IsNull(test);
+
+                storage.Save(new Test { PropA = "A", PropB = "B" });
+                Assert.IsTrue(File.Exists(fileName));
+
+                test = storage.Load();
+                Assert.IsNotNull(test);
+                Assert.AreEqual("A", test.PropA);
+                Assert.AreEqual("B", test.PropB);
             }
         }
 
@@ -71,18 +96,15 @@ namespace ObjectStorage.Test
                 var test = saveNeverStorage.Load();
                 Assert.IsNull(test);
 
-                var saved = saveNeverStorage.Save(new Test { PropA = "A", PropB = "B" });
-                Assert.IsFalse(saved);
+                saveNeverStorage.Save(new Test { PropA = "A", PropB = "B" });
                 Assert.IsFalse(File.Exists(fileName));
 
                 File.WriteAllText(fileName, "ABC");
 
-                saved = saveNeverStorage.Save(new Test { PropA = "A", PropB = "B" });
-                Assert.IsFalse(saved);
+                saveNeverStorage.Save(new Test { PropA = "A", PropB = "B" });
                 Assert.AreEqual("ABC", File.ReadAllText(fileName));
 
-                saved = storage.Save(new Test { PropA = "A", PropB = "B" });
-                Assert.IsTrue(saved);
+                storage.Save(new Test { PropA = "A", PropB = "B" });
 
                 test = saveNeverStorage.Load();
                 Assert.IsNotNull(test);
@@ -131,8 +153,7 @@ namespace ObjectStorage.Test
                 var test = storage.Load();
                 Assert.IsNull(test);
 
-                var saved = storage.Save(new Test { PropA = "A", PropB = "B" });
-                Assert.IsTrue(saved);
+                storage.Save(new Test { PropA = "A", PropB = "B" });
                 Assert.IsTrue(File.Exists(fileName));
 
                 test = storage.Load();
@@ -159,8 +180,7 @@ namespace ObjectStorage.Test
                 var test = storage.Load();
                 Assert.IsNull(test);
 
-                var saved = storage.Save(new Test { PropA = "A", PropB = "B" });
-                Assert.IsTrue(saved);
+                storage.Save(new Test { PropA = "A", PropB = "B" });
                 Assert.IsTrue(File.Exists(fileName));
 
                 test = storage.Load();
@@ -187,8 +207,7 @@ namespace ObjectStorage.Test
                 var test = storage.Load();
                 Assert.IsNull(test);
 
-                var saved = storage.Save(new Test { PropA = "A", PropB = "B" });
-                Assert.IsTrue(saved);
+                storage.Save(new Test { PropA = "A", PropB = "B" });
                 Assert.IsTrue(File.Exists(fileName));
 
                 test = storage.Load();
@@ -216,14 +235,137 @@ namespace ObjectStorage.Test
                 var test = storage.Load();
                 Assert.IsNull(test);
 
-                var saved = storage.Save(new Test { PropA = "A", PropB = "B" });
-                Assert.IsTrue(saved);
+                storage.Save(new Test { PropA = "A", PropB = "B" });
                 Assert.IsTrue(File.Exists(fileName));
 
                 test = storage.Load();
                 Assert.IsNotNull(test);
                 Assert.AreEqual("A", test.PropA);
                 Assert.AreEqual("B", test.PropB);
+            }
+        }
+
+        [TestMethod]
+        public void Test_FileStorage_InMemory()
+        {
+            var fileName = GetTestSpecificFileName();
+
+            foreach (var storageBuilder in GetStorageBuilders())
+            {
+                File.Delete(fileName);
+
+                var storage = storageBuilder
+                    .Zipped()
+                    .Encrypted("Hello World")
+                    .AddInMemoryLocation("Test")
+                    .AddFileLocation(fileName)
+                    .Build();
+
+                var test = storage.Load();
+                Assert.IsNull(test);
+
+                storage.Save(new Test { PropA = "A", PropB = "B" });
+                Assert.IsTrue(File.Exists(fileName));
+                File.Delete(fileName);
+                Assert.IsFalse(File.Exists(fileName));
+
+                test = storage.Load();
+                Assert.IsNotNull(test);
+                Assert.AreEqual("A", test.PropA);
+                Assert.AreEqual("B", test.PropB);
+            }
+        }
+
+        [TestMethod]
+        public void Test_FileStorage_WithDefault()
+        {
+            var fileName = GetTestSpecificFileName();
+
+            foreach (var storageBuilder in GetStorageBuilders())
+            {
+                File.Delete(fileName);
+
+                var storage = storageBuilder
+                    .Zipped()
+                    .Encrypted("Hello World")
+                    .AddFileLocation(fileName).WithDefault(new Test { PropA = "C", PropB = "D" })
+                    .Build();
+
+                var test = storage.Load();
+                Assert.IsNotNull(test);
+                Assert.AreEqual("C", test.PropA);
+                Assert.AreEqual("D", test.PropB);
+
+                storage.Save(new Test { PropA = "A", PropB = "B" });
+                Assert.IsTrue(File.Exists(fileName));
+                
+                test = storage.Load();
+                Assert.IsNotNull(test);
+                Assert.AreEqual("A", test.PropA);
+                Assert.AreEqual("B", test.PropB);
+
+                File.Delete(fileName);
+                test = storage.Load();
+                Assert.IsNotNull(test);
+                Assert.AreEqual("C", test.PropA);
+                Assert.AreEqual("D", test.PropB);
+            }
+        }
+
+        [TestMethod]
+        public void Test_FileStorage_Clear()
+        {
+            var fileName = GetTestSpecificFileName();
+
+            foreach (var storageBuilder in GetStorageBuilders())
+            {
+                File.Delete(fileName);
+
+                var storage = storageBuilder
+                    .Zipped()
+                    .Encrypted("Hello World")
+                    .AddFileLocation(fileName)
+                    .Build();
+
+                storage.Save(new Test { PropA = "A", PropB = "B" });
+                Assert.IsTrue(File.Exists(fileName));
+
+                var test = storage.Load();
+                Assert.IsNotNull(test);
+                Assert.AreEqual("A", test.PropA);
+                Assert.AreEqual("B", test.PropB);
+                storage.Clear();
+                Assert.IsFalse(File.Exists(fileName));
+                test = storage.Load();
+                Assert.IsNull(test);
+            }
+        }
+
+        [TestMethod]
+        public void Test_InMemoryLocal_Clear()
+        {
+            var fileName = GetTestSpecificFileName();
+
+            foreach (var storageBuilder in GetStorageBuilders())
+            {
+                File.Delete(fileName);
+
+                var storage = storageBuilder
+                    .Zipped()
+                    .Encrypted("Hello World")
+                    .AddInMemoryLocation(fileName)
+                    .Build();
+
+                storage.Save(new Test { PropA = "A", PropB = "B" });
+
+                var test = storage.Load();
+                Assert.IsNotNull(test);
+                Assert.AreEqual("A", test.PropA);
+                Assert.AreEqual("B", test.PropB);
+                storage.Clear();
+
+                test = storage.Load();
+                Assert.IsNull(test);
             }
         }
 
@@ -252,11 +394,11 @@ namespace ObjectStorage.Test
         private static IEnumerable<ICompEncryptionCompressionLocation<Test>> GetStorageBuilders()
         {
             Console.WriteLine("UsingXmlSerializer...");
-            yield return StorageBuilder.ForType<Test>().UsingXmlSerializer();
+            yield return StorageBuilder.ForType<Test>("XmlSerializer").UsingXmlSerializer();
             Console.WriteLine("UsingDataContractJsonSerializer...");
-            yield return StorageBuilder.ForType<Test>().UsingDataContractJsonSerializer();
+            yield return StorageBuilder.ForType<Test>("JsonSerializer").UsingDataContractJsonSerializer();
             Console.WriteLine("UsingDataContractSerializer...");
-            yield return StorageBuilder.ForType<Test>().UsingDataContractSerializer();
+            yield return StorageBuilder.ForType<Test>("DataContractSerializer").UsingDataContractSerializer();
         }
         private static string GetTestSpecificFileName([CallerMemberName] string name = "null") => $"{name}.xml";
     }

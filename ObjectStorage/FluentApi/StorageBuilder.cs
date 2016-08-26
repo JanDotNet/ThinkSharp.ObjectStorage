@@ -17,10 +17,18 @@ namespace ThinkSharp.ObjectStorage.FluentApi
         IStorageBuilder<TData>
         where TData : class
     {
+        private readonly string myName;
         private readonly IList<IStreamTransformation> myStreamTransformation = new List<IStreamTransformation>();
         private readonly IList<StorageEndpoint<TData>> myStorageLocations = new List<StorageEndpoint<TData>>();
 
         private ISerializer<TData> mySerializer;
+
+        public StorageBuilder() 
+            : this(typeof(TData).Name) { }
+        public StorageBuilder(string name)
+        {
+            myName = name;
+        }
 
         #region Implementation of IStorageLocationSelector<TData>
         ICompLocationOptions<TData> IStorageLocationSelector<TData>.AddFileLocation(string fileName)
@@ -28,9 +36,29 @@ namespace ThinkSharp.ObjectStorage.FluentApi
             myStorageLocations.Add(new StorageEndpoint<TData>(new FileStorageLocation(fileName)));
             return this;
         }
+
+        ICompLocationOptions<TData> IStorageLocationSelector<TData>.AddEmbeddedResource(string path)
+        {
+            AddLocation(new EmbeddedResourceLocation<TData>(path));
+            return AsReadonly();
+        }
+
+        ICompLocationOptions<TData> IStorageLocationSelector<TData>.AddEmbeddedResource<TResourceLocation>(string path)
+        {
+            AddLocation(new EmbeddedResourceLocation<TResourceLocation>(path));
+            return AsReadonly();
+        }
+
+        ICompLocationOptions<TData> IStorageLocationSelector<TData>.AddInMemoryLocation(string key)
+        {
+            AddLocation(new InMemoryLocation<TData>($"{myName}_{key}"));
+            return this;
+        }
+
         IStorage<TData> IStorageLocationSelector<TData>.Build()
         {
             return new Storage<TData>(
+                myName,
                 mySerializer, 
                 myStreamTransformation.ToArray(), 
                 myStorageLocations.ToArray());

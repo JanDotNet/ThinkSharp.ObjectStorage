@@ -6,5 +6,7 @@ namespace ThinkSharp.ObjectStorage.Location
     {
         Stream Open();
         void Write(Stream stream);
+
+        void Clear();
     }
 }

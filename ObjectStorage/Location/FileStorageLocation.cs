@@ -5,7 +5,7 @@ using ThinkSharp.ObjectStorage.Helper;
 
 namespace ThinkSharp.ObjectStorage.Location
 {
-    public class FileStorageLocation : IStorageLocation
+    internal class FileStorageLocation : IStorageLocation
     {
         private readonly string myFile;
 
@@ -19,8 +19,21 @@ namespace ThinkSharp.ObjectStorage.Location
 
         public void Write(Stream stream)
         {
+            EnsureDirectoryExists();
             using (var fileStream = File.Open(myFile, FileMode.Create))
                 stream.CopyTo(fileStream);
+        }
+
+        private void EnsureDirectoryExists()
+        {
+            var fullPath = Path.GetFullPath(myFile);
+            var directory = Path.GetDirectoryName(fullPath);
+            Directory.CreateDirectory(directory);
+        }
+
+        public void Clear()
+        {
+            File.Delete(myFile);
         }
     }
 }

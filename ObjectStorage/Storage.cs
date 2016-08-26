@@ -15,6 +15,7 @@ namespace ThinkSharp.ObjectStorage
         private readonly StorageEndpoint<TData>[] myStorageEndPoints;
 
         public Storage(
+            string name,
             ISerializer<TData> serializer,
             IStreamTransformation[] streamTransformations,
             StorageEndpoint<TData>[] storageEndPoints)
@@ -25,6 +26,7 @@ namespace ThinkSharp.ObjectStorage
             if (storageEndPoints.Length == 0)
                 throw new InvalidOperationException("No storage locations defines");
 
+            Name = name;
             mySerializer = serializer;
             myStreamTransformations = streamTransformations ?? new IStreamTransformation[0];
             myStorageEndPoints = storageEndPoints;
@@ -65,38 +67,43 @@ namespace ThinkSharp.ObjectStorage
             return null;
         }
 
-        public bool Save(TData data)
+        public void Save(TData data)
         {
             data.Ensure("data").IsNotNull();
 
-            var endpoint = myStorageEndPoints.FirstOrDefault(e => !e.IsReadonly);
-            if (endpoint == null)
-                return false;
-
-            var streamsToClose = new List<Stream>();
-            using (var stream = mySerializer.Serialize(data))
+            foreach (var endPoint in myStorageEndPoints.Where(e => !e.IsReadonly))
             {
-                stream.Seek(0, SeekOrigin.Begin);
-                try
+                var streamsToClose = new List<Stream>();
+                using (var stream = mySerializer.Serialize(data))
                 {
-                    var transformedStream = stream;
-                    foreach (var streamTransformation in myStreamTransformations)
+                    stream.Seek(0, SeekOrigin.Begin);
+                    try
                     {
-                        transformedStream = streamTransformation.TransformSerialization(transformedStream);
-                        streamsToClose.Add(transformedStream);
+                        var transformedStream = stream;
+                        foreach (var streamTransformation in myStreamTransformations)
+                        {
+                            transformedStream = streamTransformation.TransformSerialization(transformedStream);
+                            streamsToClose.Add(transformedStream);
+                        }
+
+                        endPoint.Location.Write(transformedStream);
                     }
-
-                    endpoint.Location.Write(transformedStream);
-
-                    return true;
-                }
-                finally
-                {
-                    streamsToClose.Reverse();
-                    foreach (var streamToDispose in streamsToClose)
-                        streamToDispose.Close();
+                    finally
+                    {
+                        streamsToClose.Reverse();
+                        foreach (var streamToDispose in streamsToClose)
+                            streamToDispose.Close();
+                    }
                 }
             }
         }
+
+        public void Clear()
+        {
+            foreach (var storageEndpoint in myStorageEndPoints)
+                storageEndpoint.Location.Clear();
+        }
+
+        public string Name { get; }
     }
 }

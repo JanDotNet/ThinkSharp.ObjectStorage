@@ -42,8 +42,9 @@
   <ItemGroup>
     <Compile Include="FluentApi\ICompositionInterfaces.cs" />
     <Compile Include="FluentApi\IStorageBuilder.cs" />
+    <Compile Include="Location\EmbeddedResourceLocation.cs" />
+    <Compile Include="Location\InMemoryLocation.cs" />
     <Compile Include="Location\StorageEndpoint.cs" />
-    <Compile Include="Location\StorageLocationAdapter.cs" />
     <Compile Include="StreamTransformations\GZipStreamTransformation.cs" />
     <Compile Include="StreamTransformations\DeflateStreamTransformation.cs" />
     <Compile Include="StreamTransformations\EncryptionStreamTransformation.cs" />
