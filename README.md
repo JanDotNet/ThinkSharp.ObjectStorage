@@ -1,3 +1,7 @@
+Available via NuGet:
+
+    Install-Package ThinkSharp.ObjectStorage 
+
 # ThinkSharp.ObjectStorage
 ObjectStorage is a small extendable library with fluent API for creating storages for .net object.
 
