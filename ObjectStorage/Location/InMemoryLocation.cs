@@ -16,18 +16,24 @@ namespace ThinkSharp.ObjectStorage.Location
 
         public Stream Open()
         {
-            byte[] bytes;
-            if (!theInMemoryData.TryGetValue(FullKey, out bytes))
-                return null;
-            return new MemoryStream(bytes);
+            lock (theInMemoryData)
+            {
+                byte[] bytes;
+                if (!theInMemoryData.TryGetValue(FullKey, out bytes))
+                    return null;
+                return new MemoryStream(bytes);
+            }
         }
 
         public void Write(Stream stream)
         {
-            using (MemoryStream ms = new MemoryStream())
+            lock (theInMemoryData)
             {
-                stream.CopyTo(ms);
-                theInMemoryData[FullKey] = ms.ToArray();
+                using (MemoryStream ms = new MemoryStream())
+                {
+                    stream.CopyTo(ms);
+                    theInMemoryData[FullKey] = ms.ToArray();
+                }
             }
         }
 
