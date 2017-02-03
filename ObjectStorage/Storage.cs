@@ -39,7 +39,7 @@ namespace ThinkSharp.ObjectStorage
                 using (var stream = location.Location.Open())
                 {
                     if (stream == null && location.DefaultValue != null)
-                        return location.DefaultValue;
+                        return location.DefaultValue.Clone(mySerializer);
                     if (stream == null)
                         continue;
 

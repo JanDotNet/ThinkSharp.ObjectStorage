@@ -43,6 +43,7 @@
   <ItemGroup>
     <Compile Include="FluentApi\ICompositionInterfaces.cs" />
     <Compile Include="FluentApi\IStorageBuilder.cs" />
+    <Compile Include="Helper\CloneHelper.cs" />
     <Compile Include="Location\EmbeddedResourceLocation.cs" />
     <Compile Include="Location\InMemoryLocation.cs" />
     <Compile Include="Location\StorageEndpoint.cs" />

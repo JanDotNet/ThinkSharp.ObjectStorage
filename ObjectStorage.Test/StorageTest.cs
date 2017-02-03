@@ -370,6 +370,39 @@ namespace ObjectStorage.Test
         }
 
         [TestMethod]
+        public void Test_InMemoryLocal_WithDefaultValue_DefaultValueModified()
+        {
+           
+            foreach (var storageBuilder in GetStorageBuilders())
+            {
+                var defaultValue = new Test {PropA = "Prop1", PropB = "Prop2"};
+
+                var storage = storageBuilder
+                    .AddInMemoryLocation().WithDefault(defaultValue)
+                    .Build();
+
+                var actual = storage.Load();
+
+                Assert.AreEqual("Prop1", actual.PropA);
+                Assert.AreEqual("Prop2", actual.PropB);
+
+                defaultValue.PropA = "Prop1_Mod";
+                defaultValue.PropB = "Prop2_Mod";
+
+                Assert.AreEqual("Prop1", actual.PropA);
+                Assert.AreEqual("Prop2", actual.PropB);
+
+                actual.PropA = "Prop1_Mod2";
+                actual.PropB = "Prop2_Mod2";
+
+                actual = storage.Load();
+
+                Assert.AreEqual("Prop1", actual.PropA);
+                Assert.AreEqual("Prop2", actual.PropB);
+            }
+        }
+
+        [TestMethod]
         public void Test_BigTestFile()
         {
             var fileName = GetTestSpecificFileName();

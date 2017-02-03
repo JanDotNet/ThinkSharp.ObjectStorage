@@ -49,9 +49,15 @@ namespace ThinkSharp.ObjectStorage.FluentApi
             return AsReadonly();
         }
 
+        ICompLocationOptions<TData> IStorageLocationSelector<TData>.AddInMemoryLocation()
+        {
+            AddLocation(new InMemoryLocation<TData>($"{myName}"));
+            return this;
+        }
+
         ICompLocationOptions<TData> IStorageLocationSelector<TData>.AddInMemoryLocation(string key)
         {
-            AddLocation(new InMemoryLocation<TData>($"{myName}_{key}"));
+            AddLocation(new InMemoryLocation<TData>($"{myName}"));
             return this;
         }
 
@@ -142,7 +148,9 @@ namespace ThinkSharp.ObjectStorage.FluentApi
             var endPoint = myStorageLocations.LastOrDefault();
             if (endPoint == null)
                 throw new InvalidOperationException("Unable to set 'Default' if no storage location is defined.");
-            endPoint.DefaultValue = defaultValue;
+            if (mySerializer == null && defaultValue != null)
+                throw new InvalidOperationException("Unable to set 'Default' value because serializer is not available yet.");
+            endPoint.DefaultValue = defaultValue?.Clone(mySerializer);
             return this;
         }
 
