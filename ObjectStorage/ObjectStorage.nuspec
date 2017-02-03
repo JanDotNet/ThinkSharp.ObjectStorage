@@ -19,5 +19,7 @@
     </metadata>
     <files>
         <file src="bin\Release\ObjectStorage.dll" target="lib\net40\ObjectStorage.dll" />
+        <file src="bin\Release\ObjectStorage.pdb" target="lib\net40\ObjectStorage.pdb" />
+        <file src="bin\Release\ObjectStorage.xml" target="lib\net40\ObjectStorage.xml" />
     </files>
 </package>

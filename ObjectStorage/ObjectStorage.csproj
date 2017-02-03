@@ -28,6 +28,7 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <DocumentationFile>bin\Release\ObjectStorage.XML</DocumentationFile>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
@@ -71,7 +72,9 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Images\Icon.pdn" />
-    <None Include="ObjectStorage.nuspec" />
+    <None Include="ObjectStorage.nuspec">
+      <SubType>Designer</SubType>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Content Include="Images\Icon.png" />
