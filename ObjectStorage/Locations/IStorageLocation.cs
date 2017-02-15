@@ -1,7 +1,6 @@
-﻿using System;
-using System.IO;
+﻿using System.IO;
 
-namespace ThinkSharp.ObjectStorage.Location
+namespace ThinkSharp.ObjectStorage.Locations
 {
     public interface IStorageLocation
     {

@@ -1,12 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
+﻿using System.IO;
 using System.Runtime.Serialization;
-using System.Text;
-using System.Xml;
 using ThinkSharp.ObjectStorage.Helper;
 
-namespace ThinkSharp.ObjectStorage.Serializer
+namespace ThinkSharp.ObjectStorage.Serializers
 {
     internal abstract class XmlObjectSerializer<TData> : ISerializer<TData> where TData : class
     {

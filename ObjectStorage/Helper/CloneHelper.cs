@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 using System.Text;
+using ThinkSharp.ObjectStorage.Serializers;
 
 namespace ThinkSharp.ObjectStorage.Helper
 {

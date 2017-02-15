@@ -1,8 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
 
-namespace ThinkSharp.ObjectStorage.Location
+namespace ThinkSharp.ObjectStorage.Locations
 {
     internal class InMemoryLocation<TType> : IStorageLocation
     {

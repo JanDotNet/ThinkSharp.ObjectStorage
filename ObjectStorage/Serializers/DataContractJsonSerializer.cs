@@ -1,10 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.Serialization.Json;
-using System.Text;
+﻿using System.Runtime.Serialization.Json;
 
-namespace ThinkSharp.ObjectStorage.Serializer
+namespace ThinkSharp.ObjectStorage.Serializers
 {
     internal class DataContractJsonSerializer<TData> : XmlObjectSerializer<TData> where TData : class
     {

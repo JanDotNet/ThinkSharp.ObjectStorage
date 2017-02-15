@@ -1,9 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
+﻿using System.IO;
 using ThinkSharp.ObjectStorage.Helper;
 
-namespace ThinkSharp.ObjectStorage.Location
+namespace ThinkSharp.ObjectStorage.Locations
 {
     internal class FileStorageLocation : IStorageLocation
     {

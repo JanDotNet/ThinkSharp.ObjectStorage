@@ -3,21 +3,19 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using ThinkSharp.ObjectStorage.Helper;
-using ThinkSharp.ObjectStorage.Location;
-using ThinkSharp.ObjectStorage.StreamTransformations;
+using ThinkSharp.ObjectStorage.Locations;
+using ThinkSharp.ObjectStorage.Serializers;
 
 namespace ThinkSharp.ObjectStorage
 {
     internal class Storage<TData> : IStorage<TData> where TData : class
     {
         private readonly ISerializer<TData> mySerializer;
-        private readonly IStreamTransformation[] myStreamTransformations;
         private readonly StorageEndpoint<TData>[] myStorageEndPoints;
 
         public Storage(
             string name,
             ISerializer<TData> serializer,
-            IStreamTransformation[] streamTransformations,
             StorageEndpoint<TData>[] storageEndPoints)
         {
             serializer.Ensure("serializer").IsNotNull();
@@ -28,7 +26,6 @@ namespace ThinkSharp.ObjectStorage
 
             Name = name;
             mySerializer = serializer;
-            myStreamTransformations = streamTransformations ?? new IStreamTransformation[0];
             myStorageEndPoints = storageEndPoints;
         }
 
@@ -48,7 +45,7 @@ namespace ThinkSharp.ObjectStorage
 
                     try
                     {
-                        foreach (var streamTransformation in myStreamTransformations.Reverse())
+                        foreach (var streamTransformation in location.StreamTransformations.Reverse())
                         {
                             transformedStream = streamTransformation.TransformDeserialization(transformedStream);
                             streamsToClose.Add(transformedStream);
@@ -80,7 +77,7 @@ namespace ThinkSharp.ObjectStorage
                     try
                     {
                         var transformedStream = stream;
-                        foreach (var streamTransformation in myStreamTransformations)
+                        foreach (var streamTransformation in endPoint.StreamTransformations)
                         {
                             transformedStream = streamTransformation.TransformSerialization(transformedStream);
                             streamsToClose.Add(transformedStream);

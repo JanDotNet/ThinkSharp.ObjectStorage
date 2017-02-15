@@ -1,10 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
 
-namespace ThinkSharp.ObjectStorage.Location
+namespace ThinkSharp.ObjectStorage.Locations
 {
     internal class EmbeddedResourceLocation<TType> : IStorageLocation
     {

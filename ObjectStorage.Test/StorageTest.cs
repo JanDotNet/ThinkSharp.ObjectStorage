@@ -1,11 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using ThinkSharp.ObjectStorage;
 using System.Runtime.Serialization;
-using ThinkSharp.ObjectStorage.FluentApi;
+using System.Security.Cryptography;
 
 namespace ObjectStorage.Test
 {
@@ -146,8 +147,7 @@ namespace ObjectStorage.Test
                 File.Delete(fileName);
 
                 var storage = storageBuilder
-                    .Encrypted("abc")
-                    .AddFileLocation(fileName)
+                    .AddFileLocation(fileName).Encrypted("abc")
                     .Build();
 
                 var test = storage.Load();
@@ -164,6 +164,75 @@ namespace ObjectStorage.Test
         }
 
         [TestMethod]
+        public void Test_FileStorage_Encryption_DeserializationWithoutEncryptionFails()
+        {
+            var fileName = GetTestSpecificFileName();
+
+            var storagesEncrypted = GetStorageBuilders("_Encrypted")
+                .Select(b => b.AddFileLocation(fileName).Encrypted("cde").Build())
+                .ToArray();
+            var storagesNotEncrypted = GetStorageBuilders("_NotEncrypted")
+                .Select(b => b.AddFileLocation(fileName).Build())
+                .ToArray();
+
+            for (int i = 0; i < storagesEncrypted.Length; i++)
+            {
+                File.Delete(fileName);
+                Assert.IsFalse(File.Exists(fileName));
+
+                storagesEncrypted[i].Save(new Test { PropA = "A", PropB = "B" });
+                Assert.IsTrue(File.Exists(fileName));
+
+                try
+                {
+                    var storage2 = storagesNotEncrypted[i].Load();
+                    Assert.Fail("Exception expected!");
+                }
+                catch (InvalidOperationException) { }
+                catch (SerializationException) { }
+
+                var test = storagesEncrypted[i].Load();
+                Assert.IsNotNull(test);
+                Assert.AreEqual("A", test.PropA);
+                Assert.AreEqual("B", test.PropB);
+            }
+        }
+
+        [TestMethod]
+        public void Test_FileStorage_Encryption_DeserializationWithWrongKeyFails()
+        {
+            var fileName = GetTestSpecificFileName();
+
+            var storagesEncrypted = GetStorageBuilders("_Encrypted")
+                .Select(b => b.AddFileLocation(fileName).Encrypted("cde").Build())
+                .ToArray();
+            var storagesEncryptedWrongKey = GetStorageBuilders("_Encrypted_Wrong_Key")
+                .Select(b => b.AddFileLocation(fileName).Encrypted("cd").Build())
+                .ToArray();
+
+            for (int i = 0; i < storagesEncrypted.Length; i++)
+            {
+                File.Delete(fileName);
+                Assert.IsFalse(File.Exists(fileName));
+
+                storagesEncrypted[i].Save(new Test { PropA = "A", PropB = "B" });
+                Assert.IsTrue(File.Exists(fileName));
+
+                try
+                {
+                    var storage2 = storagesEncryptedWrongKey[i].Load();
+                    Assert.Fail("Exception expected!");
+                }
+                catch (CryptographicException) { }
+
+                var test = storagesEncrypted[i].Load();
+                Assert.IsNotNull(test);
+                Assert.AreEqual("A", test.PropA);
+                Assert.AreEqual("B", test.PropB);
+            }
+        }
+
+        [TestMethod]
         public void Test_FileStorage_Compression_Zip()
         {
             var fileName = GetTestSpecificFileName();
@@ -173,8 +242,7 @@ namespace ObjectStorage.Test
                 File.Delete(fileName);
 
                 var storage = storageBuilder
-                    .Zipped()
-                    .AddFileLocation(fileName)
+                    .AddFileLocation(fileName).Zipped()
                     .Build();
 
                 var test = storage.Load();
@@ -200,8 +268,7 @@ namespace ObjectStorage.Test
                 File.Delete(fileName);
 
                 var storage = storageBuilder
-                    .GZipped()
-                    .AddFileLocation(fileName)
+                    .AddFileLocation(fileName).GZipped()
                     .Build();
 
                 var test = storage.Load();
@@ -227,9 +294,7 @@ namespace ObjectStorage.Test
                 File.Delete(fileName);
 
                 var storage = storageBuilder
-                    .Zipped()
-                    .Encrypted("Hello World")
-                    .AddFileLocation(fileName)
+                    .AddFileLocation(fileName).Encrypted("password")
                     .Build();
 
                 var test = storage.Load();
@@ -255,9 +320,7 @@ namespace ObjectStorage.Test
                 File.Delete(fileName);
 
                 var storage = storageBuilder
-                    .Zipped()
-                    .Encrypted("Hello World")
-                    .AddInMemoryLocation("Test")
+                    .AddInMemoryLocation()
                     .AddFileLocation(fileName)
                     .Build();
 
@@ -286,9 +349,10 @@ namespace ObjectStorage.Test
                 File.Delete(fileName);
 
                 var storage = storageBuilder
-                    .Zipped()
-                    .Encrypted("Hello World")
-                    .AddFileLocation(fileName).WithDefault(new Test { PropA = "C", PropB = "D" })
+                    .AddFileLocation(fileName)
+                        .WithDefault(new Test { PropA = "C", PropB = "D" })
+                        .Zipped()
+                        .Encrypted("Hello World")
                     .Build();
 
                 var test = storage.Load();
@@ -322,9 +386,9 @@ namespace ObjectStorage.Test
                 File.Delete(fileName);
 
                 var storage = storageBuilder
-                    .Zipped()
-                    .Encrypted("Hello World")
                     .AddFileLocation(fileName)
+                        .Zipped()
+                        .Encrypted("Hello World")
                     .Build();
 
                 storage.Save(new Test { PropA = "A", PropB = "B" });
@@ -351,9 +415,7 @@ namespace ObjectStorage.Test
                 File.Delete(fileName);
 
                 var storage = storageBuilder
-                    .Zipped()
-                    .Encrypted("Hello World")
-                    .AddInMemoryLocation(fileName)
+                    .AddInMemoryLocation().Encrypted("Hello World").Zipped()
                     .Build();
 
                 storage.Save(new Test { PropA = "A", PropB = "B" });
@@ -410,8 +472,7 @@ namespace ObjectStorage.Test
             var storage = StorageBuilder
                 .ForType<TestBigClass>()
                 .UsingDataContractJsonSerializer()
-                .GZipped()
-                .AddFileLocation("Big_ContractJsonSerializer_gzipped.xml")
+                .AddFileLocation("Big_ContractJsonSerializer_gzipped.xml").GZipped()
                 .Build();
 
             storage.Save(new TestBigClass
@@ -424,14 +485,14 @@ namespace ObjectStorage.Test
                 PropG = "The first 4 bits are the version type and 2 for the variant so you get 122 bits of random. So if you want to you can truncate from the end to reduce the size of the UUID. It's not recommended but you still have loads of randomness, enough for your 500k records easy."
             });
         }
-        private static IEnumerable<ICompEncryptionCompressionLocation<Test>> GetStorageBuilders()
+        private static IEnumerable<IConfigureLocation<Test>> GetStorageBuilders(string namePrefix = "")
         {
             Console.WriteLine("UsingXmlSerializer...");
-            yield return StorageBuilder.ForType<Test>("XmlSerializer").UsingXmlSerializer();
+            yield return StorageBuilder.ForType<Test>("XmlSerializer" + namePrefix).UsingXmlSerializer();
             Console.WriteLine("UsingDataContractJsonSerializer...");
-            yield return StorageBuilder.ForType<Test>("JsonSerializer").UsingDataContractJsonSerializer();
+            yield return StorageBuilder.ForType<Test>("JsonSerializer" + namePrefix).UsingDataContractJsonSerializer();
             Console.WriteLine("UsingDataContractSerializer...");
-            yield return StorageBuilder.ForType<Test>("DataContractSerializer").UsingDataContractSerializer();
+            yield return StorageBuilder.ForType<Test>("DataContractSerializer" + namePrefix).UsingDataContractSerializer();
         }
         private static string GetTestSpecificFileName([CallerMemberName] string name = "null") => $"{name}.xml";
     }
