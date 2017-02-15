@@ -7,33 +7,30 @@ namespace ThinkSharp.ObjectStorage.Location
 {
     internal class FileStorageLocation : IStorageLocation
     {
-        private readonly string myFile;
+        private readonly FileInfo myFile;
 
         public FileStorageLocation(string file)
         {
             file.Ensure("file").IsNotNullOrEmpty();
 
-            myFile = file;
+            myFile = new FileInfo(file);
         }
-        public Stream Open() => File.Exists(myFile) ? File.Open(myFile, FileMode.Open) : null;
+
+        public Stream Open()
+        {
+            myFile.Refresh();
+            return myFile.Exists ? myFile.Open(FileMode.Open) : null;
+        }
+
+        public void Clear() => myFile.Delete();
 
         public void Write(Stream stream)
         {
-            EnsureDirectoryExists();
-            using (var fileStream = File.Open(myFile, FileMode.Create))
+            // ensure that the directory exists
+            myFile.Directory.Create();
+            using (var fileStream = myFile.Open(FileMode.Create))
                 stream.CopyTo(fileStream);
         }
 
-        private void EnsureDirectoryExists()
-        {
-            var fullPath = Path.GetFullPath(myFile);
-            var directory = Path.GetDirectoryName(fullPath);
-            Directory.CreateDirectory(directory);
-        }
-
-        public void Clear()
-        {
-            File.Delete(myFile);
-        }
     }
 }
