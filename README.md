@@ -1,8 +1,8 @@
-## Synopsis
-
 ObjectStorage is a small extendable library with fluent API for creating storages for .net object.
 
-Features:
+[![NuGet](https://img.shields.io/nuget/v/ThinkSharp.ObjectStorage.svg)](https://www.nuget.org/packages/ThinkSharp.ObjectStorage/)
+
+## Features
 
 * Serializations: XML / JSON
 * Storage Locations: File, Embedded Resources (read-only)
