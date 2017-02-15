@@ -22,11 +22,11 @@ Usage:
     
     IStorage<Person> storage = StorageBuilder
       .ForType<Person>()                        // create storage for the type 'Person'
-      .UsingXmlSerializer()                     // use .net's XmlSerializer for serialization
-      .Zipped()                                 // zip serialized object
-      .Encrypt("SecretPassword")                // encrypt zipped data
+      .UsingXmlSerializer()                     // use .net's XmlSerializer for serialization      
       .AddFileLocation("C:\\Temp\\File.xml")    // add a storage location to store/restore the data
-      .Build();
+          .Zipped()                             // zip serialized object for that file location
+          .Encrypt("SecretPassword")            // encrypt zipped data for that file location
+      .Build();                                 // create the configured storage
     
     storage.Save(new Person { FirstName = "Hugo", LastName = "Oguh" });
     
@@ -53,7 +53,7 @@ Another personally reason for creating the library was to practice the design of
 
 ### Creating storages
 
-The API is really simple. There is a ```StorageBuilder``` that provides static methods for configuring and creating an object of type ```IStorage<TData>```. That "storage object" can be used to store and load objects of type ```TData```:
+The API is really simple. There is a ```StorageBuilder``` that provides static methods for configuring and creating an object of type ```IStorage<TData>```. That "storage object" can be used to save and load objects of type ```TData```:
 
     public interface IStorage<TData> where TData : class
     {
@@ -70,7 +70,7 @@ The correct configuration is forced by the fluent API. It starts with the specif
 
     StorageBuilder.ForType<Person>("StorageName")...
     
-followed by the serializer to use:
+followed by one serializer to use:
 
     ...UsingXmlSerializer()
     ...UsingDataContractJsonSerializer()
@@ -87,25 +87,35 @@ The ```customSerializer``` has to implement the following ```ISerializer<TData>`
     
 After selecting the serializer, locations or transformations (e.g. zip, encryption, ...) may be added to the configuration:
 
-    StorageBuilder
+    IStorage<Person> storage = StorageBuilder
         .ForType<Person>("StorageName")
-        .UsingXmlSerializer()
-        .Zipped()
-        .Encrypted("secret")
-        .AddInMemoryLocation()
-        .AddFileLocation(fileName)
+        .UsingXmlSerializer()               
+        .AddInMemoryLocation().Zipped().Encrypted("secret")
+        .AddFileLocation("c:\\Temp\\file.xml")
         .AddEmbeddedResource("pathToEmbeddedResource")
        
-The example above create a storage that serializes the object ```Person``` using the .net's ```XmlSerializer```, encrypts the zipped data stream, adds an in memory location and a file location. 
+The example above create a storage that serializes the object ```Person``` using the .net's ```XmlSerializer```. The storage has 3 locations:
+* The in memory location reads or writes the serialized content (zipped and encrypted in the case above) as byte array to a dictionary with the storage's name as key. Therfore another instance of the storage can be used to read the in memory content.
+* The file location reads or writes the serialized content from / to the specified file.
+* The embedded resource location reads the content from the specified embedded resource. If the embedded resource is not in the same assembly as the ```Person``` class, it is possible to specifie another assembly.
 
-Note that the order of configuring locations and transformations matters:
+Calling ```storage.Load()``` for the storage created above does the following:
+* It checks if there is serialized content for the storage in memory
+* If not, it checks if the is a file with the specified content
+* if not, it loads the content from the embedded resource.
 
-* if 2 locations were added, the storage uses the second one only if the first one was not available. 
-* Adding a transformation between 2 locations, the transformation does only apply to the second location.
+Calling ```storage.Save(new Person {FirstName = "Hans", LastName = "Meier")``` for the storage above does the following:
+* It writes the serialized, zipped and encrypted person object to the in memory location
+* It writes the serialied person object to the specified file
+* The embedded resource is read-only and will be ignored
 
+### Extendability
 
+The library can be extended by implementing custom serializers, storage locations or stream transformations. The pattern is always the same: Implement one of the interfaces ([ISerializer](https://github.com/JanDotNet/ThinkSharp.ObjectStorage/blob/master/ObjectStorage/Serializers/ISerializer.cs), [IStorageLocation](https://github.com/JanDotNet/ThinkSharp.ObjectStorage/blob/master/ObjectStorage/Locations/IStorageLocation.cs) or [IStreamTransformation](https://github.com/JanDotNet/ThinkSharp.ObjectStorage/blob/master/ObjectStorage/StreamTransformations/IStreamTransformation.cs)) and create extension methods for extending the fuent API. All existing implementations are implemented following that pattern, therefore they can be used as examples:
 
-The whole configuration of the storage is done by the ```StorageBuilder```
+* [Serializers](https://github.com/JanDotNet/ThinkSharp.ObjectStorage/tree/master/ObjectStorage/Serializers)
+* [StorageLocations](https://github.com/JanDotNet/ThinkSharp.ObjectStorage/tree/master/ObjectStorage/Locations)
+* [StreamTransformations](https://github.com/JanDotNet/ThinkSharp.ObjectStorage/tree/master/ObjectStorage/StreamTransformations)
 
 ## Contributors
 
