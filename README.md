@@ -68,25 +68,30 @@ The API is really simple. There is a ```StorageBuilder``` that provides static m
 
 The correct configuration is forced by the fluent API. It starts with the specification of the object's type and the name of the storage:
 
-    StorageBuilder.ForType<Person>("StorageName")...
+    IStorage<Perso> storage = StorageBuilder.ForType<Person>("StorageName")...
     
-followed by one serializer to use:
+followed by one of the available serializer:
 
-    ...UsingXmlSerializer()
-    ...UsingDataContractJsonSerializer()
-    ...UsingDataContractSerializer()
-    ...UsingCustonSerializer(customSerializer)
-   
-The ```customSerializer``` has to implement the following ```ISerializer<TData>``` interface:
+    ...UsingXmlSerializer() or
+    ...UsingDataContractJsonSerializer() or
+    ...UsingDataContractSerializer() or
+    ...UsingCustonSerializer(customSerializer) 
+     
+After specifying the serializer, locations can be added:
 
-    public interface ISerializer<TData> where TData : class
-    {
-        TData Deserialize(Stream stream);
-        Stream Serialize(TData data);
-    }
+    ....AddInMemoryLocation() and / or
+    ....AddFileLocation(filePath) and / or
+    ....AddEmbeddedResource(resourcePath)
     
-After selecting the serializer, locations or transformations (e.g. zip, encryption, ...) may be added to the configuration:
+Each location can be configured separatly:
 
+    ....Zipped()                     // zip stream before storing                        
+    ....Encryped("secret")           // encrypt the stream before storing
+    ....AsReadonly()                 // configure location as read-only location (will be ignored during save)
+    ....WithDefault(defaultPerson)   // set a default object that will be returned if the location is empty (e.g. file does not exist)
+    
+**Example:**
+    
     IStorage<Person> storage = StorageBuilder
         .ForType<Person>("StorageName")
         .UsingXmlSerializer()               
@@ -94,20 +99,20 @@ After selecting the serializer, locations or transformations (e.g. zip, encrypti
         .AddFileLocation("c:\\Temp\\file.xml")
         .AddEmbeddedResource("pathToEmbeddedResource")
        
-The example above create a storage that serializes the object ```Person``` using the .net's ```XmlSerializer```. The storage has 3 locations:
+The example above creates a storage that serializes the object ```Person``` using the .Net's ```XmlSerializer```. The storage has 3 locations:
 * The in memory location reads or writes the serialized content (zipped and encrypted in the case above) as byte array to a dictionary with the storage's name as key. Therfore another instance of the storage can be used to read the in memory content.
 * The file location reads or writes the serialized content from / to the specified file.
 * The embedded resource location reads the content from the specified embedded resource. If the embedded resource is not in the same assembly as the ```Person``` class, it is possible to specifie another assembly.
 
-Calling ```storage.Load()``` for the storage created above does the following:
-* It checks if there is serialized content for the storage in memory
-* If not, it checks if the is a file with the specified content
-* if not, it loads the content from the embedded resource.
+Calling ```storage.Load()``` ...
+* ... checks if there is serialized content for the storage in memory and returns it
+* ... if not, it checks if the file exitsts and returns it's content
+* ... if not, it loads the content from the embedded resource.
 
-Calling ```storage.Save(new Person {FirstName = "Hans", LastName = "Meier")``` for the storage above does the following:
-* It writes the serialized, zipped and encrypted person object to the in memory location
-* It writes the serialied person object to the specified file
-* The embedded resource is read-only and will be ignored
+Calling ```storage.Save(new Person {FirstName = "Hans", LastName = "Meier")``` ...
+* ... writes the serialized, zipped and encrypted object to the in memory location
+* ... writes the serialied object to the specified file
+* ... doesn't write the serialized object to the embedded resource because it is read-only
 
 ### Extendability
 
