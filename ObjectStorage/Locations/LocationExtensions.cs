@@ -28,7 +28,7 @@ namespace ThinkSharp.ObjectStorage
         public static IConfigureLocationOrLocationOptions<TData> AddEmbeddedResource<TData>(
             this IConfigureLocation<TData> obj, string path)
             where TData : class
-            => obj.AddLocation(new EmbeddedResourceLocation<TData>(path));
+            => obj.AddLocation(new EmbeddedResourceLocation<TData>(path)).AsReadonly();
 
         /// <summary>
         /// Adds an embedded resource as read-only location.
