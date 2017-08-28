@@ -1,6 +1,6 @@
 **ThinkSharp.ObjectStorage** is a small extendable library with fluent API for creating storages for .net object.
 
-[![NuGet](https://img.shields.io/nuget/v/ThinkSharp.ObjectStorage.svg)](https://www.nuget.org/packages/ThinkSharp.ObjectStorage/) [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE.md)
+[![NuGet](https://img.shields.io/nuget/v/ThinkSharp.ObjectStorage.svg)](https://www.nuget.org/packages/ThinkSharp.ObjectStorage/) [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
 ## Features
 
